@@ -1,0 +1,35 @@
+name: legichain_sdk
+description: >
+  Official Legichain SDK for Flutter — KYC identity verification, AML
+  sanctions screening, and address verification. One API key wraps
+  every /v1 endpoint plus a stateful KYC flow controller (polling,
+  SSE, retry, NFC chip-read interface, image-quality gating).
+version: 1.0.0
+homepage: https://legichain.com
+repository: https://github.com/legichain/legichain-flutter
+issue_tracker: https://github.com/legichain/legichain-flutter/issues
+documentation: https://github.com/legichain/legichain/tree/main/docs/api-public
+
+topics:
+  - kyc
+  - aml
+  - sanctions
+  - identity
+  - compliance
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^4.0.0
+
+flutter:
+  uses-material-design: false
