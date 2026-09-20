@@ -22,7 +22,7 @@ No physical device acceptance or complete live KYC submission is claimed here.
 The iOS reader supports MRZ-based PACE; CAN-only access is currently Android only.
 
 The shared native-source.json in React Native/Flutter records bundled source
-and resource hashes. Run python tools/verify_native.py in either source checkout
+and resource hashes. Run python tool/verify_native.py in this source checkout
 when editing shared files. Canonical sources are legichain-android and
 legichain-ios; copy changes to both wrappers and regenerate the corresponding
 SHA-256 entries before release.
