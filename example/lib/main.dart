@@ -1,113 +1,59 @@
-// Minimal demo of the Legichain Flutter SDK.
-// Run `flutter pub get` then `flutter run`.
-
-// ignore_for_file: avoid_print
-
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:legichain_sdk/legichain_sdk.dart';
 
-const _apiKey = 'key_xxx.secret_yyy';      // ← paste yours
-
 void main() => runApp(const DemoApp());
-
 class DemoApp extends StatelessWidget {
   const DemoApp({super.key});
   @override
-  Widget build(BuildContext c) => MaterialApp(
-        title: 'Legichain Demo',
-        theme: ThemeData.dark(useMaterial3: true),
-        home: const _Home(),
-      );
+  Widget build(BuildContext context) => MaterialApp(
+    theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff147d70))),
+    home: const KycExample(),
+  );
 }
-
-class _Home extends StatefulWidget {
-  const _Home();
+class KycExample extends StatefulWidget {
+  const KycExample({super.key});
   @override
-  State<_Home> createState() => _HomeState();
+  State<KycExample> createState() => _KycExampleState();
 }
-
-class _HomeState extends State<_Home> {
-  late final LegichainClient _client =
-      LegichainClient(apiKey: _apiKey);
-  KycFlowController? _flow;
-  String _log = 'ready';
-
+class _KycExampleState extends State<KycExample> {
+  final token = TextEditingController();
+  KycLanguage language = KycLanguage.tr;
+  bool nfc = true, busy = false;
+  String message = '';
+  bool get tr => language == KycLanguage.tr;
   @override
-  void dispose() {
-    _flow?.dispose();
-    _client.close();
-    super.dispose();
+  void dispose() { token.dispose(); super.dispose(); }
+  Future<void> start() async {
+    setState(() { busy = true; message = ''; });
+    try {
+      final result = await LegichainKyc.start(apiToken: token.text.trim(), language: language,
+        application: {'nfc_required': nfc, 'liveness_required': true, 'face_match_required': true});
+      if (!mounted) return;
+      setState(() { message = result.submitted
+        ? (tr ? 'Başvurunuz gönderildi. Sonuç size bildirilecek.' : 'Application submitted. You will be notified of the result.')
+        : (tr ? 'İşlem iptal edildi.' : 'Verification cancelled.'); });
+    } catch (_) {
+      if (mounted) setState(() { message = tr ? 'Akış başlatılamadı. Lütfen tekrar deneyin.' : 'Unable to start. Please try again.'; });
+    } finally { if (mounted) setState(() { busy = false; }); }
   }
-
-  Future<void> _runScreening() async {
-    setState(() => _log = 'screening…');
-    final r = await _client.screening.person(
-      name: 'Vladimir Putin',
-      country: 'RU',
-      topN: 5,
-    );
-    setState(() => _log =
-        'recommendation=${r.summary.recommendation.name} '
-        'hits=${r.hits.length} top_conf=${r.summary.topMatchConfidence}');
-  }
-
-  Future<void> _startKyc() async {
-    setState(() => _log = 'creating application…');
-    _flow = await _client.kyc.startFlow(
-      subjectExternalId: 'demo-${DateTime.now().millisecondsSinceEpoch}',
-      documentTypes: const [DocumentType.passport],
-      claimedFullName: 'ERIKA MUSTERMANN',
-      claimedNationality: 'DEU',
-    );
-    await _flow!.startListening();
-    _flow!.stream.listen((s) => setState(() => _log =
-        'state=${s.state} step=${s.currentStep.name} '
-        'attempt=${s.currentAttempt}/${s.maxAttempts} '
-        'retry=${s.retryAvailable}'));
-  }
-
-  Future<void> _fakeUploadDoc() async {
-    if (_flow == null) return;
-    // Replace with real jpeg from a camera plugin.
-    final fakeJpeg = Uint8List(2048);
-    await _flow!.uploadDocument(
-      side: DocumentSide.single,
-      jpegBytes: fakeJpeg,
-      documentType: DocumentType.passport,
-    );
-  }
-
   @override
-  Widget build(BuildContext c) => Scaffold(
-        appBar: AppBar(title: const Text('Legichain SDK demo')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FilledButton(
-                onPressed: _runScreening,
-                child: const Text('Run AML screening'),
-              ),
-              const SizedBox(height: 8),
-              FilledButton(
-                onPressed: _startKyc,
-                child: const Text('Start KYC application'),
-              ),
-              const SizedBox(height: 8),
-              FilledButton(
-                onPressed: _fakeUploadDoc,
-                child: const Text('Upload (fake) document'),
-              ),
-              const SizedBox(height: 16),
-              const Divider(),
-              Expanded(
-                  child:
-                      SingleChildScrollView(child: SelectableText(_log))),
-            ],
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(tr ? 'Legichain örnek uygulama' : 'Legichain sample app')),
+    body: ListView(padding: const EdgeInsets.all(24), children: [
+      Text(tr ? 'Kimliğinizi doğrulayın' : 'Verify your identity', style: Theme.of(context).textTheme.headlineMedium),
+      const SizedBox(height: 24),
+      SegmentedButton<KycLanguage>(segments: const [
+        ButtonSegment(value: KycLanguage.tr, label: Text('Türkçe')),
+        ButtonSegment(value: KycLanguage.en, label: Text('English')),
+      ], selected: {language}, onSelectionChanged: busy ? null : (value) => setState(() { language = value.first; })),
+      const SizedBox(height: 24),
+      TextField(controller: token, obscureText: true, autocorrect: false, enableSuggestions: false,
+        decoration: InputDecoration(labelText: tr ? 'Legichain API tokeni (örnek uygulama)' : 'Legichain API token (sample app)')),
+      SwitchListTile(title: Text(tr ? 'NFC çip okuma' : 'Read NFC chip'), value: nfc,
+        onChanged: busy ? null : (value) => setState(() { nfc = value; })),
+      const SizedBox(height: 20),
+      FilledButton(onPressed: busy ? null : start, child: Text(tr ? 'Doğrulamayı başlat' : 'Start verification')),
+      const SizedBox(height: 24), Text(message),
+    ]),
+  );
 }

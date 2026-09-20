@@ -33,6 +33,8 @@ class KycApi {
       DocumentType.passport,
     ],
     bool nfcRequired = false,
+    bool? livenessRequired,
+    bool? faceMatchRequired,
     String? callbackUrl,
     String? claimedFullName,
     String? claimedPersonalNumber,
@@ -51,6 +53,8 @@ class KycApi {
       intent: intent,
       documentTypeAllowed: documentTypes,
       nfcRequired: nfcRequired,
+      livenessRequired: livenessRequired,
+      faceMatchRequired: faceMatchRequired,
       callbackUrl: callbackUrl,
       claimedFullName: claimedFullName,
       claimedPersonalNumber: claimedPersonalNumber,
@@ -110,6 +114,10 @@ class KycApi {
     required List<int> sodBytes,
     List<int>? dg1,
     List<int>? dg2,
+    List<int>? dg7,
+    List<int>? dg12,
+    List<int>? dg13,
+    Map<String, dynamic>? deviceAttestation,
     List<int>? dg11,
     List<int>? dg14,
     List<int>? dg15,
@@ -123,6 +131,10 @@ class KycApi {
     if (keyDerivation != null) body['key_derivation'] = keyDerivation;
     if (dg1 != null) body['dg1_b64'] = base64Encode(dg1);
     if (dg2 != null) body['dg2_b64'] = base64Encode(dg2);
+    if (dg7 != null) body['dg7_b64'] = base64Encode(dg7);
+    if (dg12 != null) body['dg12_b64'] = base64Encode(dg12);
+    if (dg13 != null) body['dg13_b64'] = base64Encode(dg13);
+    if (deviceAttestation != null) body['device_attestation'] = deviceAttestation;
     if (dg11 != null) body['dg11_b64'] = base64Encode(dg11);
     if (dg14 != null) body['dg14_b64'] = base64Encode(dg14);
     if (dg15 != null) body['dg15_b64'] = base64Encode(dg15);
@@ -192,19 +204,24 @@ class KycApi {
   Future<Map<String, dynamic>> submitLiveness({
     required String applicationId,
     required String clientToken,
-    required String challengeToken,
-    required List<String> actionsPerformed,
-    List<List<int>>? frames,
-    double? padScore,
+    required String mode,
+    required List<int> frameBytes,
+    String frameMimeType = 'image/jpeg',
+    String? challengeToken,
+    List<Map<String, dynamic>> completedActions = const [],
+    List<Map<String, dynamic>> frames = const [],
+    Map<String, dynamic>? deviceAttestation,
   }) =>
       _c.postJson(
         '/v1/kyc/applications/$applicationId/liveness',
         body: {
-          'challenge_token': challengeToken,
-          'actions_performed': actionsPerformed,
-          if (frames != null)
-            'frames_b64': frames.map(base64Encode).toList(),
-          if (padScore != null) 'pad_score': padScore,
+          'mode': mode,
+          'frame_b64': base64Encode(frameBytes),
+          'frame_mime_type': frameMimeType,
+          if (challengeToken != null) 'challenge_token': challengeToken,
+          'completed_actions': completedActions,
+          'frames': frames,
+          if (deviceAttestation != null) 'device_attestation': deviceAttestation,
         },
         clientToken: clientToken,
       );

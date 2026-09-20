@@ -27,6 +27,7 @@
 /// );
 /// ```
 library legichain_sdk;
+export 'src/native_kyc.dart';
 
 export 'src/client.dart';
 export 'src/errors.dart';

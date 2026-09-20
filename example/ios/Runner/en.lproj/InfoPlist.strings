@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "Camera access is needed to verify your document and liveness.";
+"NFCReaderUsageDescription" = "NFC access is needed to read your identity document chip.";

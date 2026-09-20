@@ -10,6 +10,8 @@ class KycApplicationCreate {
   final Intent intent;
   final List<DocumentType> documentTypeAllowed;
   final bool nfcRequired;
+  final bool? livenessRequired;
+  final bool? faceMatchRequired;
   final String? callbackUrl;
   final String? claimedFullName;
   final String? claimedPersonalNumber;
@@ -32,6 +34,8 @@ class KycApplicationCreate {
       DocumentType.passport,
     ],
     this.nfcRequired = false,
+    this.livenessRequired,
+    this.faceMatchRequired,
     this.callbackUrl,
     this.claimedFullName,
     this.claimedPersonalNumber,
@@ -51,6 +55,8 @@ class KycApplicationCreate {
       'document_type_allowed':
           documentTypeAllowed.map((d) => d.wire).toList(),
       'nfc_required': nfcRequired,
+      if (livenessRequired != null) 'liveness_required': livenessRequired,
+      if (faceMatchRequired != null) 'face_match_required': faceMatchRequired,
       'meta': meta,
     };
     if (subjectExternalId != null) m['subject_external_id'] = subjectExternalId;
@@ -289,10 +295,12 @@ class LivenessChallenge {
 class KycDecision {
   final String applicationId;
   final String personaId;
-  final DecisionOutcome outcome;
+  final DecisionOutcome? outcome;
+  final bool pending;
+  final String? state;
   final String? outcomeReason;
   final double? riskScore;
-  final String decisionId;
+  final String? decisionId;
   final List<String> hardFailCodes;
   final String? manualReviewId;
   final String? manualReviewPriority;
@@ -301,6 +309,8 @@ class KycDecision {
     required this.applicationId,
     required this.personaId,
     required this.outcome,
+    this.pending = false,
+    this.state,
     this.outcomeReason,
     this.riskScore,
     required this.decisionId,
@@ -312,11 +322,11 @@ class KycDecision {
   factory KycDecision.fromJson(Map<String, dynamic> j) => KycDecision(
         applicationId: j['application_id'] as String,
         personaId: j['persona_id'] as String,
-        outcome: DecisionOutcomeWire.from(j['outcome'] as String?) ??
-            DecisionOutcome.manualReview,
+        outcome: DecisionOutcomeWire.from(j['outcome'] as String?),
         outcomeReason: j['outcome_reason'] as String?,
         riskScore: (j['risk_score'] as num?)?.toDouble(),
-        decisionId: j['decision_id'] as String,
+        decisionId: j['decision_id'] as String?,
+        pending: j['pending'] == true, state: j['state'] as String?,
         hardFailCodes:
             List<String>.from(j['hard_fail_codes'] as List? ?? const []),
         manualReviewId: j['manual_review_id'] as String?,

@@ -5,8 +5,10 @@
 .pub-cache/
 .pub/
 build/
-ios/
-android/
+android/.gradle/
+android/local.properties
+ios/Pods/
+ios/.symlinks/
 linux/
 macos/
 windows/

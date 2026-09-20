@@ -35,7 +35,7 @@ class LegichainClient {
 
   LegichainClient({
     required this.apiKey,
-    this.baseUrl = 'https://panel.legichain.com',
+    this.baseUrl = 'https://api.legichain.com',
     this.timeout = const Duration(seconds: 30),
     http.Client? httpClient,
     this.userAgent,
@@ -64,7 +64,7 @@ class LegichainClient {
       'authorization': 'Bearer $apiKey',
       'accept': 'application/json',
       'user-agent':
-          'legichain-flutter-sdk/1.0.0${userAgent != null ? ' ($userAgent)' : ''}',
+          'legichain-flutter-sdk/2.0.0${userAgent != null ? ' ($userAgent)' : ''}',
     };
     if (clientToken != null) h['x-kyc-client-token'] = clientToken;
     if (idempotencyKey != null) h['idempotency-key'] = idempotencyKey;

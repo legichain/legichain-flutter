@@ -146,6 +146,10 @@ class KycFlowController {
     required List<int> sod,
     List<int>? dg1,
     List<int>? dg2,
+    List<int>? dg7,
+    List<int>? dg12,
+    List<int>? dg13,
+    Map<String, dynamic>? deviceAttestation,
     List<int>? dg11,
     List<int>? dg14,
     List<int>? dg15,
@@ -159,6 +163,7 @@ class KycFlowController {
       sodBytes: sod,
       dg1: dg1,
       dg2: dg2,
+      dg7: dg7, dg12: dg12, dg13: dg13, deviceAttestation: deviceAttestation,
       dg11: dg11,
       dg14: dg14,
       dg15: dg15,
@@ -202,18 +207,22 @@ class KycFlowController {
       );
 
   Future<Map<String, dynamic>> submitLiveness({
-    required String challengeToken,
-    required List<String> actionsPerformed,
-    List<List<int>>? frames,
-    double? padScore,
+    required String mode,
+    required List<int> frameBytes,
+    String frameMimeType = 'image/jpeg',
+    String? challengeToken,
+    List<Map<String, dynamic>> completedActions = const [],
+    List<Map<String, dynamic>> frames = const [],
+    Map<String, dynamic>? deviceAttestation,
   }) =>
       _api.submitLiveness(
         applicationId: applicationId,
         clientToken: clientToken,
         challengeToken: challengeToken,
-        actionsPerformed: actionsPerformed,
+        mode: mode, frameBytes: frameBytes, frameMimeType: frameMimeType,
+        completedActions: completedActions,
         frames: frames,
-        padScore: padScore,
+        deviceAttestation: deviceAttestation,
       );
 
   Future<KycDecision> submit() => _api.submit(
